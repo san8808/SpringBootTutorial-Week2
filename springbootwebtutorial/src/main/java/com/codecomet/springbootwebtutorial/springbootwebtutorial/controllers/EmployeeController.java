@@ -2,8 +2,10 @@ package com.codecomet.springbootwebtutorial.springbootwebtutorial.controllers;
 
 import com.codecomet.springbootwebtutorial.springbootwebtutorial.dto.EmployeeDTO;
 import com.codecomet.springbootwebtutorial.springbootwebtutorial.entities.EmployeeEntity;
+import com.codecomet.springbootwebtutorial.springbootwebtutorial.exceptions.ResourceNotFoundException;
 import com.codecomet.springbootwebtutorial.springbootwebtutorial.repositories.EmployeeRepository;
 import com.codecomet.springbootwebtutorial.springbootwebtutorial.services.EmployeeService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @RestController
@@ -32,8 +35,11 @@ public class EmployeeController {
 
         Optional<EmployeeDTO> employeeDTO = employeeService.getEmployeeById(employeeId);
 
-        return employeeDTO.map(employeeDTO1 -> ResponseEntity.ok(employeeDTO1)).orElse(ResponseEntity.notFound().build());
+        return employeeDTO.map(employeeDTO1 -> ResponseEntity.ok(employeeDTO1))
+                .orElseThrow(() ->new ResourceNotFoundException("Employee Not Found with id - "+ employeeId));
     }
+
+
 
     @GetMapping
     public ResponseEntity<List<EmployeeDTO>> getAllEmployees(@RequestParam(required = false) Integer age,
@@ -43,7 +49,7 @@ public class EmployeeController {
     }
 
     @PostMapping
-    public ResponseEntity<EmployeeDTO> createNewEmployee(@RequestBody EmployeeDTO employeeDTO){
+    public ResponseEntity<EmployeeDTO> createNewEmployee(@RequestBody @Valid  EmployeeDTO employeeDTO){
        EmployeeDTO employeeDTO1= employeeService.createNewEmployee(employeeDTO);
 
        return new ResponseEntity<>(employeeDTO1, HttpStatus.CREATED);

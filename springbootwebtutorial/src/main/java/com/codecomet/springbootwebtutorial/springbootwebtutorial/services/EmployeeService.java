@@ -2,6 +2,7 @@ package com.codecomet.springbootwebtutorial.springbootwebtutorial.services;
 
 import com.codecomet.springbootwebtutorial.springbootwebtutorial.dto.EmployeeDTO;
 import com.codecomet.springbootwebtutorial.springbootwebtutorial.entities.EmployeeEntity;
+import com.codecomet.springbootwebtutorial.springbootwebtutorial.exceptions.ResourceNotFoundException;
 import com.codecomet.springbootwebtutorial.springbootwebtutorial.repositories.EmployeeRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +43,9 @@ public class EmployeeService {
     }
 
     public EmployeeDTO updateEmployeeById(Long employeeId, EmployeeDTO employeeDTO) {
+
+        isExistsByEmployeeId(employeeId);
+
         EmployeeEntity employeeEntity = modelMapper.map(employeeDTO,EmployeeEntity.class);
         employeeEntity.setId(employeeId);
         EmployeeEntity savedEmployeeEntity = employeeRepository.save(employeeEntity);
@@ -53,7 +57,7 @@ public class EmployeeService {
 
         boolean exists = employeeRepository.existsById(employeeId);
 
-        if(!exists) return false;
+        if(!exists) throw new ResourceNotFoundException("Employee not present with id - "+employeeId);
 
         return true;
     }
@@ -61,10 +65,7 @@ public class EmployeeService {
 
     public boolean deleteEmployeeById(Long employeeId) {
 
-
-        boolean exists = isExistsByEmployeeId(employeeId);
-
-        if(!exists) return false;
+        isExistsByEmployeeId(employeeId);
 
         try {
             employeeRepository.deleteById(employeeId);
@@ -78,9 +79,7 @@ public class EmployeeService {
 
     public EmployeeDTO updatePartialEmployeeById(Long employeeId, Map<String, Object> updates) {
 
-        boolean exists = isExistsByEmployeeId(employeeId);
-
-        if(!exists) return null;
+       isExistsByEmployeeId(employeeId);
 
         EmployeeEntity employeeEntity = employeeRepository.findById(employeeId).get();
 
